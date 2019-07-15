@@ -31,8 +31,8 @@ class Board:
         num_bombs = 0
 
         while num_bombs < self.bombs:
-            ind1 = np.random.randint(1,self.size+1)
-            ind2 = np.random.randint(1,self.size+1)
+            ind1 = np.random.randint(1, self.size+1)
+            ind2 = np.random.randint(1, self.size+1)
 
             if board_array[ind1][ind2] != 1:
                 board_array[ind1][ind2] = True
@@ -103,6 +103,7 @@ class Board:
 
         return cell_objects
 
+
 class Actions:
 
     def __init__(self):
@@ -115,13 +116,13 @@ class Actions:
     def difficulty_select():
         # implement some kind of button later...
         difficulty = 5
-        while difficulty not in range(0,5):
+        while difficulty not in range(0, 5):
             difficulty = input('Custom difficulty? 1 to 3, 3 is hardest')
 
         return difficulty*6
 
     def open_flag(self, row, col):
-
+        return
 
 
 game = Board(3, 5)
