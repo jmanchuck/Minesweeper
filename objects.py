@@ -5,13 +5,13 @@ class Cell:
     def __init__(self, value=None, bomb=False, opened=False, flagged=False):
         """
         Args:
-            _value (int): number of surrounding bombs (will be displayed)
+            value (int): number of surrounding bombs (will be displayed)
 
-            _bomb (bool): bomb or not
+            bomb (bool): bomb or not
 
-            _opened (bool): opened or not
+            opened (bool): opened or not
 
-            _flagged (bool): flagged or not
+            flagged (bool): flagged or not
         """
         self._value = value
         self._bomb = bomb
@@ -19,10 +19,10 @@ class Cell:
         self._flagged = flagged
 
     def open(self):  # when mouse click occurs to open, change cell state to opened
-        self.opened = True
+        self._opened = True
 
     def flag(self):  # when mouse click for flag, change cell state to flagged
-        self.flagged = True
+        self._flagged = True
 
     def opened(self):
         return self._opened
@@ -59,27 +59,33 @@ class Board:
         
         self._size = size
         self._bombs = bombs
-        self.fake_bomb_board = self.create_fake_bomb_board()
+        self.fake_bomb_board = self.create_fake_bomb_board(input('initial column: '), input('initial row: '))
         self.bomb_board = self.create_bomb_board()
         self.neighbours_board = self.create_neighbours_board()
         self.cell_board = self.create_cell_board()
 
-    def create_fake_bomb_board(self):
+    def create_fake_bomb_board(self, init_col, init_row):
         """
+        Args:
+            init_col (int): initial col selection
+            init_row (int): initial row selection, ensures there is no bomb on first selection
         Returns:
              (n+2) x (n+2) 2D boolean array of bombs
         """
 
         # create an extra perimeter with no bombs around the board for ease of checking neighbours
-        board_array = np.zeros((self.size+2, self.size+2), dtype=bool)
+        board_array = np.zeros((self._size+2, self._size+2), dtype=bool)
 
         num_bombs = 0
 
-        while num_bombs < self.bombs:
-            ind1 = np.random.randint(1,self.size+1)
-            ind2 = np.random.randint(1,self.size+1)
+        while num_bombs < self._bombs:
+            ind1 = np.random.randint(1,self._size+1)
+            ind2 = np.random.randint(1,self._size+1)
 
-            if board_array[ind1][ind2] != 1:
+            if ind1 == init_row and ind2 == init_col:
+                continue
+
+            elif not board_array[ind1][ind2]:
                 board_array[ind1][ind2] = True
                 num_bombs += 1
 
@@ -116,12 +122,10 @@ class Board:
             2D array storing how many neighbours are bombs
         """
 
-        # maybe could use this as main board since None values are bombs, anything else is an integer
+        board = np.zeros((self._size, self._size))
 
-        board = np.zeros((self.size, self.size))
-
-        for i in range(self.size):
-            for j in range(self.size):
+        for i in range(self._size):
+            for j in range(self._size):
                 board[i][j] = self.return_neighbour(i+1, j+1)
 
         return board
@@ -134,10 +138,10 @@ class Board:
         Returns:
              n x n 2D boolean array of bombs
         """
-        real_board = np.zeros((self.size, self.size), dtype=bool)
+        real_board = np.zeros((self._size, self._size), dtype=bool)
 
-        for i in range(self.size):
-            for j in range(self.size):
+        for i in range(self._size):
+            for j in range(self._size):
                 real_board[i][j] = self.fake_bomb_board[i+1][j+1]
 
         return real_board
@@ -154,38 +158,25 @@ class Board:
 
         neighbour_board = self.neighbours_board
 
-        cell_objects = [[None for x in range(self.size)] for x in range(self.size)]
+        cell_objects = [[None for x in range(self._size)] for x in range(self._size)]
 
-        for i in range(self.size):
-            for j in range(self.size):
+        for i in range(self._size):
+            for j in range(self._size):
                 cell_objects[i][j] = Cell(neighbour_board[i][j], bombs_board[i][j])
 
         return cell_objects
+
+    def open_cell(self, col, row):
+        self.cell_board[col][row].open()
+
+    def flag_cell(self, col, row):
+        self.cell_board[col][row].flag()
 
     def size(self):
         return self._size
 
     def bombs(self):
         return self._bombs
-
-
-class Actions:
-    # this class can be implimented in the game loop
-    def __init__(self):
-        self._size = self.difficulty_select()
-        self.bombs = self._size/3
-        board = Board(self._size, self.bombs)
-
-    @staticmethod
-    def difficulty_select():
-        # implement some kind of button later...
-        difficulty = 5
-        while difficulty not in range(0, 5):
-            difficulty = input('Custom difficulty? 1 to 3, 3 is hardest')
-        return difficulty*6
-
-    def open_flag(self, row, col):
-        return
 
 
 game = Board()
