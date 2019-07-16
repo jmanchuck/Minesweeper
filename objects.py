@@ -31,70 +31,99 @@ class Board:
     def __init__(self, size=8, bombs=16):
         self._size = size
         self._bombs = bombs
-        self.pseudo_board = self.create_array()
+        self.fake_bomb_board = self.create_fake_bomb_board()
+        self.bomb_board = self.create_bomb_board()
         self.neighbours_board = self.create_neighbours_board()
-        self.final_board = self.object_board()
+        self.cell_board = self.create_cell_board()
 
-    def create_array(self):
-        board_array = np.zeros((self._size+2, self._size+2), dtype=bool)
+    def create_fake_bomb_board(self):
+        """
+        :returns 2D boolean array of bombs
+        """
+
+        # create an extra perimeter with no bombs around the board for ease of checking neighbours
+        board_array = np.zeros((self.size+2, self.size+2), dtype=bool)
+
         num_bombs = 0
 
-        while num_bombs < self._bombs:
-            ind1 = np.random.randint(1, self._size+1)
-            ind2 = np.random.randint(1, self._size+1)
+        while num_bombs < self.bombs:
+            ind1 = np.random.randint(1,self.size+1)
+            ind2 = np.random.randint(1,self.size+1)
+
             if board_array[ind1][ind2] != 1:
                 board_array[ind1][ind2] = True
                 num_bombs += 1
 
         return board_array
 
-    def print_board(self):
-        print(self.pseudo_board)
-
-    def cell_create(self):
-        # not sure what the point of this is -SC
-        cells = [self._size]
-        pass
-
     def return_neighbour(self, col, row):
-        if self.pseudo_board[col][row]:  # it doesn't really matter for a bomb...
-            return None
+        """
+        :param col: int
+            index for column
+        :param row: int
+            index for row
+        :returns how many neighbours are bombs for a specific position
+
+        """
+        if self.fake_bomb_board[col][row]:
+            return None # ignore this for bomb since we don't care
+
         else:
             neighbours = 0
+
             for i in [col-1, col, col+1]:
                 for j in [row-1, row, row+1]:
                     if i == col and j == row:
                         pass
                     else:
-                        # print('checking for ', i, j)
-                        if self.pseudo_board[i][j]:
+                        if self.fake_bomb_board[i][j]:
                             neighbours += 1
+
             return neighbours
 
     def create_neighbours_board(self):
-        board = np.zeros((self._size, self._size))
-        for i in range(self._size):
-            for j in range(self._size):
+        """
+        :returns: 2D array storing how many neighbours are bombs
+        """
+
+        # maybe could use this as main board since None values are bombs, anything else is an integer
+
+        board = np.zeros((self.size, self.size))
+
+        for i in range(self.size):
+            for j in range(self.size):
                 board[i][j] = self.return_neighbour(i+1, j+1)
+
         return board
 
     def print_neighbours_board(self):
         print(self.neighbours_board)
 
-    def bombs_board(self):
-        new_arr = np.zeros((self._size, self._size), dtype=bool)
-        for i in range(self._size):
-            for j in range(self._size):
-                new_arr[i][j] = self.pseudo_board[i+1][j+1]
-        return new_arr
+    def create_bomb_board(self):
 
-    def object_board(self):
-        bombs_board = self.bombs_board()
+        real_board = np.zeros((self.size, self.size), dtype=bool)
+
+        for i in range(self.size):
+            for j in range(self.size):
+                real_board[i][j] = self.fake_bomb_board[i+1][j+1]
+
+        return real_board
+    
+    def print_bomb_board(self):
+        print(self.bomb_board)
+
+    def create_cell_board(self):
+
+        bombs_board = self.bomb_board
+
         neighbour_board = self.neighbours_board
-        cell_objects = [[None for x in range(self._size)] for x in range(self._size)]
-        for i in range(self._size):
-            for j in range(self._size):
+
+        cell_objects = [[None for x in range(self.size)] for x in range(self.size)]
+
+        for i in range(self.size):
+            for j in range(self.size):
                 cell_objects[i][j] = Cell(neighbour_board[i][j], bombs_board[i][j])
+
         return cell_objects
 
     def size(self):
@@ -123,7 +152,7 @@ class Actions:
         return
 
 
-game = Board(3, 5)
-game.print_board()
+game = Board()
+game.print_bomb_board()
 game.print_neighbours_board()
-game.object_board()
+print(game.cell_board)
