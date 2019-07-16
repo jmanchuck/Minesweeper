@@ -38,16 +38,15 @@ class Cell:
 
 
 class Board:
-    def __init__(self, size=8, bombs=16):
+    def __init__(self, size=8, bombs=24):
         
         """
-        Parameters
+        Args:
             size (int): integer n for dimension n x n of square array (maybe change or extend to rectangle)
 
             bombs (int): number of bombs on the board (must be less than size^2)
 
-        Attributes
-
+        Attributes:
             fake_bomb_board (2D np arr): array of booleans, True signifies a bomb. (n+2) x (n+2)
 
             bomb_board (2D np arr): same as above but without the extra 'False' surrounding it. n x n
@@ -63,6 +62,7 @@ class Board:
         self.bomb_board = self.create_bomb_board()
         self.neighbours_board = self.create_neighbours_board()
         self.cell_board = self.create_cell_board()
+        self.display_board = np.zeros((self._size, self._size), dtype='O')
 
     def create_fake_bomb_board(self, init_col, init_row):
         """
@@ -79,8 +79,8 @@ class Board:
         num_bombs = 0
 
         while num_bombs < self._bombs:
-            ind1 = np.random.randint(1,self._size+1)
-            ind2 = np.random.randint(1,self._size+1)
+            ind1 = np.random.randint(1, self._size+1)
+            ind2 = np.random.randint(1, self._size+1)
 
             if ind1 == init_row and ind2 == init_col:
                 continue
@@ -90,6 +90,9 @@ class Board:
                 num_bombs += 1
 
         return board_array
+
+    def print_fake_bomb_board(self):
+        print(self.fake_bomb_board)
 
     def return_neighbour(self, col, row):
         """
@@ -101,7 +104,7 @@ class Board:
             None if position is bomb
         """
         if self.fake_bomb_board[col][row]:
-            return None # ignore this for bomb since we don't care
+            return 0
 
         else:
             neighbours = 0
@@ -166,11 +169,20 @@ class Board:
 
         return cell_objects
 
+    def print_display(self):
+        print(self.display_board)
+
     def open_cell(self, col, row):
         self.cell_board[col][row].open()
+        if self.cell_board[col][row].bomb():
+            self.display_board[col][row] = '!'
+        else:
+            self.display_board[col][row] = self.cell_board[col][row].value()
 
     def flag_cell(self, col, row):
         self.cell_board[col][row].flag()
+
+        self.display_board[col][row] = 'X'
 
     def size(self):
         return self._size
@@ -179,7 +191,15 @@ class Board:
         return self._bombs
 
 
-game = Board()
-game.print_bomb_board()
-game.print_neighbours_board()
-print(game.cell_board)
+if __name__ == "__main__":
+    game = Board()
+    # game.print_fake_bomb_board()
+    game.print_neighbours_board()
+    # print(game.cell_board)
+    for i in range(10):
+        col = int(input('open col: '))
+        row = int(input('open row: '))
+
+        game.open_cell(col, row)
+
+        game.print_display()
