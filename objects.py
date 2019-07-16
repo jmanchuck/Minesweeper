@@ -3,6 +3,16 @@ import numpy as np
 
 class Cell:
     def __init__(self, value=None, bomb=False, opened=False, flagged=False):
+        """
+        Args:
+            _value (int): number of surrounding bombs (will be displayed)
+
+            _bomb (bool): bomb or not
+
+            _opened (bool): opened or not
+
+            _flagged (bool): flagged or not
+        """
         self._value = value
         self._bomb = bomb
         self._opened = opened
@@ -29,6 +39,24 @@ class Cell:
 
 class Board:
     def __init__(self, size=8, bombs=16):
+        
+        """
+        Parameters
+            size (int): integer n for dimension n x n of square array (maybe change or extend to rectangle)
+
+            bombs (int): number of bombs on the board (must be less than size^2)
+
+        Attributes
+
+            fake_bomb_board (2D np arr): array of booleans, True signifies a bomb. (n+2) x (n+2)
+
+            bomb_board (2D np arr): same as above but without the extra 'False' surrounding it. n x n
+
+            neighbours_board (2D np arr): array storing the information of adjacent bombs. n x n
+
+            cell_board (2D list): list of Cell objects. Cell(value, bomb), default opened and flagged is False
+        """
+        
         self._size = size
         self._bombs = bombs
         self.fake_bomb_board = self.create_fake_bomb_board()
@@ -38,7 +66,8 @@ class Board:
 
     def create_fake_bomb_board(self):
         """
-        :returns 2D boolean array of bombs
+        Returns:
+             (n+2) x (n+2) 2D boolean array of bombs
         """
 
         # create an extra perimeter with no bombs around the board for ease of checking neighbours
@@ -58,12 +87,12 @@ class Board:
 
     def return_neighbour(self, col, row):
         """
-        :param col: int
-            index for column
-        :param row: int
-            index for row
-        :returns how many neighbours are bombs for a specific position
-
+        Args:
+            col (int): column index
+            row (int): row index
+        Returns:
+            number of bombs in immediate neighbour (max 8) for a specific position
+            None if position is bomb
         """
         if self.fake_bomb_board[col][row]:
             return None # ignore this for bomb since we don't care
@@ -83,7 +112,8 @@ class Board:
 
     def create_neighbours_board(self):
         """
-        :returns: 2D array storing how many neighbours are bombs
+        Returns
+            2D array storing how many neighbours are bombs
         """
 
         # maybe could use this as main board since None values are bombs, anything else is an integer
@@ -100,7 +130,10 @@ class Board:
         print(self.neighbours_board)
 
     def create_bomb_board(self):
-
+        """
+        Returns:
+             n x n 2D boolean array of bombs
+        """
         real_board = np.zeros((self.size, self.size), dtype=bool)
 
         for i in range(self.size):
@@ -113,7 +146,10 @@ class Board:
         print(self.bomb_board)
 
     def create_cell_board(self):
-
+        """
+        Returns:
+            2D list of Cell objects
+        """
         bombs_board = self.bomb_board
 
         neighbour_board = self.neighbours_board
