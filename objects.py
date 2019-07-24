@@ -39,7 +39,6 @@ class Cell:
 
 class Board:
     def __init__(self, size=6, bombs=6):
-        
         """
         Args:
             size (int): integer n for dimension n x n of square array (maybe change or extend to rectangle)
@@ -55,7 +54,6 @@ class Board:
 
             display_board (2D np arr): n x n display board
         """
-        
         self._size = size
         self._bombs = bombs
         self.bomb_board = None
