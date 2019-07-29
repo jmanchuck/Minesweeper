@@ -1,3 +1,5 @@
+# minesweeper by jmc
+
 import numpy as np
 
 
@@ -5,12 +7,9 @@ class Cell:
     def __init__(self, value, bomb=False, opened=False, flagged=False):
         """
         Args:
-            value (int): number of surrounding bombs (will be displayed)
-
+            value (int): number of surrounding bombs
             bomb (bool): bomb or not
-
             opened (bool): opened or not
-
             flagged (bool): flagged or not
         """
         self._opened = opened
@@ -41,19 +40,17 @@ class Cell:
 
 
 class Board:
-    def __init__(self, size=6, bombs=6):
+    def __init__(self, size=10, bombs=25):
         """
         Args:
             size (int): integer n for dimension n x n of square array (maybe change or extend to rectangle)
-
             bombs (int): number of bombs on the board (must be less than size^2)
 
         Attributes:
             bomb_board (2D np arr): array of booleans, True signifies a bomb. (n+2) x (n+2)
-
             neighbours_board (2D np arr): array storing the information of adjacent bombs. (n+2) x (n+2)
-
-            cell_board (2D list): list of Cell objects. Cell(value, bomb), default opened and flagged is False (n+2) x (n+2)
+            cell_board (2D list): list of Cell objects from class
+            display (2D list): game display for playing in terminal
         """
 
         self._size = size
@@ -114,8 +111,14 @@ class Board:
                         neighbours += 1
             return neighbours
 
-    def neighbour_coord(self, row, col):
-
+    @staticmethod
+    def neighbour_coord(row, col):
+        """
+        Args:
+            row (int), col(int)
+        Returns:
+            List of all neighbours in the form of a tuple (i,j)
+        """
         neighbour_list = []
         for i in [row - 1, row, row + 1]:
             for j in [col - 1, col, col + 1]:
@@ -130,10 +133,9 @@ class Board:
         Returns
             2D array storing how many neighbours are bombs for each cell, bomb cells are -1
         """
-
         board = np.zeros((self._size + 2, self._size + 2)).astype(int)
 
-        for i in range(1, self._size+1):  # this will make you index 1, 2, 3, 4, 5, 6. DO NOT CHANGE
+        for i in range(1, self._size+1):  # indexes from 1 to size
             for j in range(1, self._size+1):
                 board[i][j] = self.return_neighbour(i, j)
 
@@ -159,20 +161,13 @@ class Board:
 
         return cell_objects
 
-    def size(self):
-        return self._size
-
-    def bombs(self):
-        return self._bombs
-
-    def create(self, init_row, init_col):
+    def generate(self, init_row, init_col):
         """
-        Creates board attributes, calls adj_zero to generate first open
+        Creates board attributes, opens initial board
         Args:
             init_row (int): initial row that is opened
             init_col (int): initial column that is opened
         """
-
         if init_col > self._size or init_row > self._size:
             print('index out of range, game size is {}'.format(self._size))
             print('rerun and don\'t troll please')
@@ -189,41 +184,27 @@ class Board:
             col (int)
             row (int)
 
-        Handles opening cells using the Cell object.
+        Handles opening cells using the Cell object, with flooding condition
         """
         cell = self.cell_board[row][col]
         if not cell.opened():
             cell.open()
 
-            if cell.bomb():
-                self.game = False
-
-            # elif cell.value() == 0:
-            #     self.open_adj_zeros(row, col)
-
-            elif cell.value() == 0:
+            if cell.value() == 0:
                 for (surr_row, surr_col) in self.neighbour_coord(row, col):
                     if 0 < surr_row <= self._size and 0 < surr_col <= self._size:
                         self.open_cell(surr_row, surr_col)
 
-    def flag_cell(self, row, col):
-        self.cell_board[row][col].flag()
-
-    def unflag_cell(self, row, col):
-        self.cell_board[row][col].unflag()
-
     def open_neighbours(self, row, col):
-        """
-        Args:
-             col (int)
-             row (int)
-        """
-        for i in [row - 1, row, row + 1]:
-            for j in [col - 1, col, col + 1]:
-                self.open_cell(i, j)
+        adj_flags = 0
+        for (surr_row, surr_col) in self.neighbour_coord(row, col):
+            if self.cell_board[surr_row][surr_col].flagged():
+                adj_flags += 1
+        if adj_flags == cell.value():
+            for (surr_row, surr_col) in self.neighbour_coord(row, col):
+                self.open_cell(surr_row, surr_col)
 
     def update_display(self):
-
         for row in range(self._size+2):
             for col in range(self._size+2):
                 cell = self.cell_board[row][col]
@@ -237,6 +218,7 @@ class Board:
 
                 elif not cell.flagged():
                     self.display[row][col] = '_'
+
     def print_display(self):
         real_display = [[None for x in range(self._size)] for x in range(self._size)]
 
@@ -246,6 +228,12 @@ class Board:
         print('\n', '##### DISPLAY #####')
         for r in real_display:
             print(" ".join(r))
+
+    def size(self):
+        return self._size
+
+    def bombs(self):
+        return self._bombs
 
 
 if __name__ == "__main__":
@@ -260,7 +248,7 @@ if __name__ == "__main__":
     print('Top left is 1,1. First index represents row, second index represents column')
     print('Initial open')
     # column and row starts from 1 from top left to bottom right
-    game.create(int(input('Open row: ')), int(input('Open col: ')))
+    game.generate(int(input('Open row: ')), int(input('Open col: ')))
     # game.print_neighbours_board() # print this for answers
     game.update_display()
     game.print_display()
@@ -271,7 +259,8 @@ if __name__ == "__main__":
         badInput = True
         while badInput:
             try:
-                choice = input('open (o) or flag (f) followed by row and column, e.g. o,3,3: ').split(',')
+                choice = input(
+                    'open (o) or flag (f) followed by row and column, e.g. o,3,3: ').split(',')
                 row = int(choice[1])
                 col = int(choice[2])
             except IndexError:
@@ -292,13 +281,16 @@ if __name__ == "__main__":
                 if cell.opened():
                     print('Invalid, cell is opened')
                 elif cell.flagged():
-                    game.unflag_cell(row, col)
+                    cell.unflag()
                     remaining += 1
                     badInput = False
                 else:
-                    game.flag_cell(row, col)
+                    cell.flag()
                     remaining -= 1
                     badInput = False
+
+        if remaining == 0:
+            play = False
 
         game.update_display()
         game.print_display()
