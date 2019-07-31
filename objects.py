@@ -234,11 +234,17 @@ class Board:
             for j in range(self._size):
                 real_display[i][j] = self.display[i+1][j+1]
 
-        print('__' * self._size)
+        # extra display things
+        print("   ",  " ".join([str(i) for i in range(1, self._size+1)]))
+        print('__' * (self._size+2))
+        counter = 1
 
+        # this is relevant
         for r in real_display:
-            print(" ".join(r))
-        print('__' * self._size)
+            print(counter, " ", " ".join(r))
+            counter += 1
+
+        print('__' * (self._size+2))
 
     def size(self):
         return self._size
@@ -281,10 +287,16 @@ if __name__ == "__main__":
     print('Top left is (1, 1) bottom right is ({}, {})\n'.format(size, size))
     print('First index represents row, second index represents column.\n')
 
+    # this is just extra display stuff, isn't necessary
+    print("   ", " ".join([str(i) for i in range(1, size + 1)]))
+    print('__' * (size + 2))
     blank = [['_' for x in range(size)] for x in range(size)]
-
+    counterino = 1
     for i in blank:
-        print(" ".join(i))
+        print(counterino, " ", " ".join(i))
+        counterino += 1
+    print('__' * (size + 2))
+    # display ends here
 
     game.generate(int(input('\nOpen row: ')), int(input('Open col: ')))
     # game.print_neighbours_board() # print this for answers
