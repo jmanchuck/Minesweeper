@@ -59,6 +59,7 @@ class Board:
         self.bomb_board = None
         self.neighbours_board = None
         self.cell_board = None
+        self.play = True
         self.display = [['_' for x in range(self._size+2)] for x in range(self._size+2)]
 
     def create_bomb_board(self, init_row, init_col):
@@ -188,8 +189,12 @@ class Board:
         Handles opening cells using the Cell object, with flooding condition
         """
         cell = self.cell_board[row][col]
-        if not cell.opened():
+
+        if not cell.opened() and not cell.flagged():
             cell.open()
+
+            if cell.bomb():
+                self.play = False
 
             if cell.value() == 0:
                 for (surr_row, surr_col) in self.neighbour_coord(row, col):
@@ -199,9 +204,11 @@ class Board:
     def open_neighbours(self, row, col):
         adj_flags = 0
         for (surr_row, surr_col) in self.neighbour_coord(row, col):
+            print(surr_row, surr_col)
             if self.cell_board[surr_row][surr_col].flagged():
                 adj_flags += 1
-        if adj_flags == cell.value():
+        if adj_flags == self.cell_board[row][col].value():
+            print('match found')
             for (surr_row, surr_col) in self.neighbour_coord(row, col):
                 self.open_cell(surr_row, surr_col)
 
@@ -226,9 +233,12 @@ class Board:
         for i in range(self._size):
             for j in range(self._size):
                 real_display[i][j] = self.display[i+1][j+1]
-        print('\n', '##### DISPLAY #####')
+
+        print('__' * self._size)
+
         for r in real_display:
             print(" ".join(r))
+        print('__' * self._size)
 
     def size(self):
         return self._size
@@ -237,62 +247,94 @@ class Board:
         return self._bombs
 
 
+def get_input():
+    bad_input = True
+
+    while bad_input:
+
+        choice = input('\nopen (o) or flag (f) followed by row and column, e.g. o 3 3: ').split(' ')
+        if len(choice) != 3:
+            continue
+        try:
+            choice = [choice[0], int(choice[1]), int(choice[2])]
+        except ValueError:
+            continue
+        if choice[1] in range(1, size + 1) and choice[2] in range(1, size + 1) and choice[0].lower() in ['o', 'f']:
+            return choice
+
+
 if __name__ == "__main__":
-    play = True
-    print('Default game size is 8x8 with 16 bombs')
-    game = Board()  # put in args to change size and no. of bombs, i.e. Board(12, 36) for 12x12 and 36 bombs
+    print('\nDefault game contains 25% of cells being bombs')
+
+    game_dimension = int(input("\nDimension of game? (dont troll): "))
+    if game_dimension < 4:
+        print('try something harder pussy')
+        exit()
+    game_bombs = int(game_dimension**2/4)
+
+    game = Board(game_dimension, game_bombs)  # change args for size and no. of bombs, i.e. Board(12, 36)
 
     bombs = game.bombs()
     size = game.size()
     remaining = bombs
 
-    print('Top left is 1,1. First index represents row, second index represents column')
-    print('Initial open')
-    # column and row starts from 1 from top left to bottom right
-    game.generate(int(input('Open row: ')), int(input('Open col: ')))
+    print('Top left is (1, 1) bottom right is ({}, {})\n'.format(size, size))
+    print('First index represents row, second index represents column.\n')
+
+    blank = [['_' for x in range(size)] for x in range(size)]
+
+    for i in blank:
+        print(" ".join(i))
+
+    game.generate(int(input('\nOpen row: ')), int(input('Open col: ')))
     # game.print_neighbours_board() # print this for answers
     game.update_display()
     game.print_display()
 
-    print('indexing starts from 1 when opening cells')
+    while game.play:
 
-    while play:
-        badInput = True
-        while badInput:
-            try:
-                choice = input('open (o) or flag (f) followed by row and column, e.g. o,3,3: ').split(',')
-                row = int(choice[1])
-                col = int(choice[2])
-            except IndexError:
-                print('Invalid input')
-                continue
-            if row not in range(1, size+1) and col not in range(1, size+1):
-                print('Invalid input')
-                continue
-            cell = game.cell_board[row][col]
-            if choice[0].lower() == 'o':
-                game.open_cell(row, col)
-                if game.cell_board[row][col].bomb():
-                    print('is a bomb you die')
-                    play = False
-                badInput = False
+        # get inputs from user
+        choice = get_input()
+        row, col = choice[1], choice[2]
 
-            elif choice[0].lower() == 'f':
-                if cell.opened():
-                    print('Invalid, cell is opened')
-                elif cell.flagged():
-                    cell.unflag()
-                    remaining += 1
-                    badInput = False
-                else:
-                    cell.flag()
-                    remaining -= 1
-                    badInput = False
+        cell = game.cell_board[row][col]
 
-        if remaining == 0:
-            play = False
+        # user commands applied to object
+        if choice[0].lower() == 'o':
+            if cell.opened():
+                game.open_neighbours(row, col)
+            game.open_cell(row, col)
 
+        elif choice[0].lower() == 'f':
+            if cell.opened():
+                print('Invalid, cell is opened')
+            elif cell.flagged():
+                cell.unflag()
+                remaining += 1
+            else:
+                cell.flag()
+                remaining -= 1
+
+        # update and printing
         game.update_display()
         game.print_display()
         print('remaining bombs: {}'.format(remaining))
-        print('__' * size)
+
+        # win condition, otherwise it's a lose
+        if remaining == 0:
+            correct = 0
+            for i in range(size+2):
+                for j in range(size+2):
+                    if game.bomb_board[i][j] and game.cell_board[i][j].flagged():
+                        correct += 1
+
+            if correct == bombs:
+                game.play = False
+                print("All mines found. You win!")
+
+                exit()
+
+        if not game.play:
+            print("You lose you bad")
+
+
