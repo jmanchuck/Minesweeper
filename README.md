@@ -1,12 +1,21 @@
 # Minesweeper  
-Minesweeper
 
-Written by : jmanchuck, stanleyycheung
+Requires: Python 3, numpy
 
-changelog:
+Written by: jmanchuck, stanleyycheung
 
-15/07 - initialized
-      - written basic pygame interface: initialized white screen
+## Change Log
 
-31/07 - updated 'objects.py' features with auto-open and win/lose conditions
-      - 
+
+15/07 
+* initialized
+* written basic pygame interface: initialized white screen
+
+31/07
+* updated ```objects.py``` features with auto-open and win/lose conditions
+
+## TODO
+
+- [ ] update pygame interface to work with objects.py for 10x10
+- [ ] develop NN for minesweeper
+- [ ] ... 
