@@ -6,15 +6,13 @@ Basic pygame interface for minesweeper
 """
 
 import pygame
-import numpy as np
 from objects import Board
 
 pygame.init()
 
 # pygame interface variables
-window_size = [510, 510]
+window_size = [510, 540]
 font = pygame.font.Font('freesansbold.ttf', 30)
-game = True
 
 # define colours
 black = (0, 0, 0)
@@ -28,19 +26,10 @@ margin = 10
 cell_width = 40
 cell_height = 40
 
-####### text example format, just keep it here to copy and paste
-# text = font.render('testing', True, red)
-# textRect = text.get_rect()
-# textRect.center = (250, 250)
-
 # create display
 screen = pygame.display.set_mode(window_size)
 pygame.display.set_caption("Minesweeper")
 clock = pygame.time.Clock()
-
-# board testing
-testboard = [[0 for x in range(10)] for x in range(10)]
-flag_board = [[False for x in range(10)] for x in range(10)]
 
 # creating board and storing variables
 board = Board()
@@ -48,9 +37,28 @@ bombs = board.bombs()
 size = board.size()  # for now we just stick to 10
 
 initialise = True
+game = True
 
 
-while game:
+def make_text(text, x, y, color):
+
+    """
+    Args:
+        text (string/int): text to be displayed
+        x (int), y(int): position
+        color (var): one of the defined colors
+
+    Blits the text passed into this function
+    """
+
+    text = font.render(str(text), True, color)
+    textRect = text.get_rect()
+
+    textRect.center = (x, y)
+    screen.blit(text, textRect)
+
+
+while board.play:
 
     # initial display
     if initialise:
@@ -64,57 +72,111 @@ while game:
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            game = False
+            board.play = False
+            pygame.quit()
+            quit()
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mouse_press = pygame.mouse.get_pressed()
             left_click, middle_click, right_click = mouse_press[0], mouse_press[1], mouse_press[2]
             pos = pygame.mouse.get_pos()
-            col = int(pos[0] // (cell_width + margin))
-            row = int(pos[1] // (cell_height + margin))
+
+            if pos[0] > (cell_width + margin) * size or pos[1] > (cell_height + margin) * size:
+                continue
+
+            col = 1 + int(pos[0] // (cell_width + margin))
+            row = 1 + int(pos[1] // (cell_height + margin))
+
+            print('Click {}. Grid coordinates {}, {}'.format(pos, row, col))
 
             # condition for opening
             if initialise and left_click == 1:
-                board.generate(row+1, col+1)  # created board object
+                board.generate(row, col)  # created board object
+                make_text('Remaining: ', 200, 525, white)
                 initialise = False
 
             # defining variables for easier access
             info_board = board.neighbours_board
             cell_board = board.cell_board
 
-            cell = board.cell_board[row+1][col+1]
+            # define cell for clicked cell
+            cell = cell_board[row][col]
 
             # normal play starts here
-            # click types and conditions
             if not initialise:
-                if left_click == 1 and not cell.flagged():
-                    board.open_cell(row+1, col+1)
+
+
+
+                # calling methods based on player choice
+                if left_click == 1 and not cell.flagged() and not cell.opened():
+                    board.open_cell(row, col)
+
+                elif middle_click == 1 and not cell.flagged() and cell.opened():
+                    board.open_neighbours(row, col)
+
                 elif right_click == 1 and not cell.opened():
+                    print('flagging')
                     if cell.flagged():
                         cell.unflag()
+                        board.remaining += 1
                     else:
                         cell.flag()
-                elif middle_click == 1:
-                    pass  # do the reveal here
-                print('Click {}. Grid coordinates {}, {}'.format(pos, row, col))
+                        board.remaining -= 1
 
-                for i in range(size):
-                    for j in range(size):
-                        cell = cell_board[i+1][j+1]
+                # blit text for each cell
+                for i in range(1, size + 1):
+                    for j in range(1, size + 1):
+
+                        # define new cell here, since we are looking at every single cell
+                        cell = board.cell_board[i][j]
                         color = grey
-                        if cell.flagged():
-                            color = green
+
+                        # draw value if opened
                         if cell.opened():
+                            # print("Index {}, {} is opened".format(i, j))
                             number = cell.value()
-                            text = font.render(str(number), True, black)
-                            textRect = text.get_rect()
-                            textRect.center = (50 * i + 30, 50 * j + 30)
 
-                            screen.blit(text, textRect)
+                            y = 50 * (i - 1) + 30
+                            x = 50 * (j - 1) + 30
 
-                        pygame.draw.rect(screen, color, [(margin + cell_width) * j + margin,
-                                                         (margin + cell_height) * i + margin,
-                                                         cell_width, cell_height])
+                            make_text(number, x, y, black)
+
+                        # otherwise draw solid colour
+                        else:
+                            if cell.flagged():
+                                color = green
+                            pygame.draw.rect(screen, color, [(margin + cell_width) * (j - 1) + margin,
+                                                             (margin + cell_height) * (i - 1) + margin,
+                                                             cell_width, cell_height])
+
+
+                # draw the number of remaining bombs, first clearing then re draw
+                pygame.draw.rect(screen, black, (345, 510, 50, 30))
+                make_text(board.remaining, 360, 525, white)
+
+    if not board.play:
+        lose_text = 'You lose! Right click to play again'
+
+        make_text(lose_text, 255, 270, red)
+
+        pygame.display.flip()
+
+        prompt = True
+
+        while prompt:
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    board.play = False
+                    prompt = False
+
+                # if right click
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    mouse_press = pygame.mouse.get_pressed()
+                    if mouse_press[2] == 1:
+                        initialise = True
+                        board.play = True
+                        prompt = False
 
     clock.tick(60)
 

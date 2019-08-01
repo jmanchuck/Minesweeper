@@ -1,7 +1,7 @@
 # minesweeper by jmc
 
 import numpy as np
-
+import itertools
 
 class Cell:
     def __init__(self, value, bomb=False, opened=False, flagged=False):
@@ -56,6 +56,7 @@ class Board:
 
         self._size = size
         self._bombs = bombs
+        self.remaining = bombs
         self.bomb_board = None
         self.neighbours_board = None
         self.cell_board = None
@@ -170,10 +171,6 @@ class Board:
             init_row (int): initial row that is opened
             init_col (int): initial column that is opened
         """
-        if init_col > self._size or init_row > self._size:
-            print('index out of range, game size is {}'.format(self._size))
-            print('rerun and don\'t troll please')
-            quit()
 
         self.bomb_board = self.create_bomb_board(init_row, init_col)
         self.neighbours_board = self.create_neighbours_board()
@@ -188,10 +185,13 @@ class Board:
 
         Handles opening cells using the Cell object, with flooding condition
         """
+
         cell = self.cell_board[row][col]
 
         if not cell.opened() and not cell.flagged():
             cell.open()
+
+            # print("opened cell {}, {}".format(row, col))
 
             if cell.bomb():
                 self.play = False
@@ -202,13 +202,21 @@ class Board:
                         self.open_cell(surr_row, surr_col)
 
     def open_neighbours(self, row, col):
+        """
+        Args:
+            col (int)
+            row (int)
+
+        Auto opens neighbours for a cell that is open and has number of surrounding flags = cell's value
+        Note that if the flags are wrong, the player loses by opening a bomb
+        """
         adj_flags = 0
         for (surr_row, surr_col) in self.neighbour_coord(row, col):
             print(surr_row, surr_col)
             if self.cell_board[surr_row][surr_col].flagged():
                 adj_flags += 1
         if adj_flags == self.cell_board[row][col].value():
-            print('match found')
+            # print('match found, opening neighbours for {}, {}'.format(row, col))
             for (surr_row, surr_col) in self.neighbour_coord(row, col):
                 self.open_cell(surr_row, surr_col)
 
@@ -254,10 +262,12 @@ class Board:
 
 
 def get_input():
+    """
+    Returns:
+        Valid user input
+    """
     bad_input = True
-
     while bad_input:
-
         choice = input('\nopen (o) or flag (f) followed by row and column, e.g. o 3 3: ').split(' ')
         if len(choice) != 3:
             continue
@@ -348,5 +358,3 @@ if __name__ == "__main__":
 
         if not game.play:
             print("You lose you bad")
-
-
