@@ -8,6 +8,11 @@ Written by: jmanchuck, stanleyycheung
 
 Run main.py.
 
+Change board arguments in ```main.py``` to customise number of cells and number of bombs. 
+``` 
+board = Board(n size, number of bombs) 
+```
+
 Left click to open a cell, right click to flag a cell and middle click to auto reveal neighbours of a cell when its neighbours have been flagged.
 
 ## Change Log
