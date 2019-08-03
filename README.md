@@ -4,6 +4,12 @@ Requires: Python 3, numpy
 
 Written by: jmanchuck, stanleyycheung
 
+## Gameplay
+
+Run main.py.
+
+Left click to open a cell, right click to flag a cell and middle click to auto reveal neighbours of a cell when its neighbours have been flagged.
+
 ## Change Log
 
 
