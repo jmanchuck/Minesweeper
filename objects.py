@@ -1,7 +1,7 @@
 # minesweeper by jmc
 
 import numpy as np
-import itertools
+
 
 class Cell:
     def __init__(self, value, bomb=False, opened=False, flagged=False):

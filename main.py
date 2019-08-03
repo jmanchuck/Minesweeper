@@ -8,11 +8,17 @@ Basic pygame interface for minesweeper
 import pygame
 from objects import Board
 
+# creating board and storing variables
+board = Board(12, 36)
+bombs = board.bombs()
+size = board.size()  # for now we just stick to 10
+
+# generate pygame based on board
 pygame.init()
 
-# pygame interface variables
-window_size = [510, 540]
-font = pygame.font.Font('freesansbold.ttf', 30)
+# pygame text size
+fontsize = 3*size
+font = pygame.font.Font('freesansbold.ttf', fontsize)
 
 # define colours
 black = (0, 0, 0)
@@ -22,22 +28,20 @@ red = (255, 0, 0)
 grey = (211, 211, 211)
 
 # display properties
-margin = 10
-cell_width = 40
-cell_height = 40
+margin = size
+cell_len = 4*size
+
+width = size * (margin + cell_len) + margin
+length = size * (margin + cell_len) + cell_len
+
+window_size = [width, length]
 
 # create display
 screen = pygame.display.set_mode(window_size)
 pygame.display.set_caption("Minesweeper")
 clock = pygame.time.Clock()
 
-# creating board and storing variables
-board = Board()
-bombs = board.bombs()
-size = board.size()  # for now we just stick to 10
-
 initialise = True
-game = True
 
 
 def make_text(text, x, y, color):
@@ -63,12 +67,12 @@ while board.play:
     # initial display
     if initialise:
         screen.fill(black)
-        for row in range(10):
-            for col in range(10):
+        for row in range(size):
+            for col in range(size):
                 color = grey
-                pygame.draw.rect(screen, color, [(margin + cell_width) * col + margin,
-                                                 (margin + cell_height) * row + margin,
-                                                 cell_width, cell_height])
+                pygame.draw.rect(screen, color, [(margin + cell_len) * col + margin,
+                                                 (margin + cell_len) * row + margin,
+                                                 cell_len, cell_len])
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -81,18 +85,18 @@ while board.play:
             left_click, middle_click, right_click = mouse_press[0], mouse_press[1], mouse_press[2]
             pos = pygame.mouse.get_pos()
 
-            if pos[0] > (cell_width + margin) * size or pos[1] > (cell_height + margin) * size:
+            if pos[0] > (cell_len + margin) * size or pos[1] > (cell_len + margin) * size:
                 continue
 
-            col = 1 + int(pos[0] // (cell_width + margin))
-            row = 1 + int(pos[1] // (cell_height + margin))
+            col = 1 + int(pos[0] // (cell_len + margin))
+            row = 1 + int(pos[1] // (cell_len + margin))
 
-            print('Click {}. Grid coordinates {}, {}'.format(pos, row, col))
+            # print('Click {}. Grid coordinates {}, {}'.format(pos, row, col))
 
             # condition for opening
             if initialise and left_click == 1:
                 board.generate(row, col)  # created board object
-                make_text('Remaining: ', 200, 525, white)
+                # make_text('Remaining: {}'.format(board.remaining), x/2, y - cell_len/2, white)
                 initialise = False
 
             # defining variables for easier access
@@ -105,8 +109,6 @@ while board.play:
             # normal play starts here
             if not initialise:
 
-
-
                 # calling methods based on player choice
                 if left_click == 1 and not cell.flagged() and not cell.opened():
                     board.open_cell(row, col)
@@ -115,7 +117,7 @@ while board.play:
                     board.open_neighbours(row, col)
 
                 elif right_click == 1 and not cell.opened():
-                    print('flagging')
+                    # print('flagging')
                     if cell.flagged():
                         cell.unflag()
                         board.remaining += 1
@@ -136,8 +138,8 @@ while board.play:
                             # print("Index {}, {} is opened".format(i, j))
                             number = cell.value()
 
-                            y = 50 * (i - 1) + 30
-                            x = 50 * (j - 1) + 30
+                            y = (cell_len + margin) * (i - 1) + cell_len/2 + margin
+                            x = (cell_len + margin) * (j - 1) + cell_len/2 + margin
 
                             make_text(number, x, y, black)
 
@@ -145,19 +147,19 @@ while board.play:
                         else:
                             if cell.flagged():
                                 color = green
-                            pygame.draw.rect(screen, color, [(margin + cell_width) * (j - 1) + margin,
-                                                             (margin + cell_height) * (i - 1) + margin,
-                                                             cell_width, cell_height])
+                            pygame.draw.rect(screen, color, [(margin + cell_len) * (j - 1) + margin,
+                                                             (margin + cell_len) * (i - 1) + margin,
+                                                             cell_len, cell_len])
 
-
-                # draw the number of remaining bombs, first clearing then re draw
-                pygame.draw.rect(screen, black, (345, 510, 50, 30))
-                make_text(board.remaining, 360, 525, white)
+                # draw black strip over bottom text, then redraw remaining bombs text
+                pygame.draw.rect(screen, black, (0, length - cell_len, width, cell_len))
+                make_text('Remaining: {}'.format(board.remaining), width/2, length - cell_len/2, white)
 
     if not board.play:
-        lose_text = 'You lose! Right click to play again'
+        pygame.draw.rect(screen, black, (0, length - cell_len, width, cell_len))
+        lose_text = '!!!!!!'
 
-        make_text(lose_text, 255, 270, red)
+        make_text(lose_text, width / 2, length - cell_len / 2, red)
 
         pygame.display.flip()
 
