@@ -13,7 +13,7 @@ Change board arguments in ```main.py``` to customise number of cells and number 
 board = Board(n size, number of bombs) 
 ```
 
-Left click to open a cell, right click to flag a cell and middle click to auto reveal neighbours of a cell when its neighbours have been flagged.
+Left click to open a cell, right click to flag a cell and left click an already open cell to auto reveal neighbours when all its neighbours have been flagged.
 
 ## Change Log
 
@@ -32,6 +32,9 @@ Left click to open a cell, right click to flag a cell and middle click to auto r
 
 04/08
 * made pygame interface variable sized for different nxn Minesweeper games
+
+05/08
+* moved auto open to left click, added icons for bombs and flags, updated colours
 
 ## TODO
 
