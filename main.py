@@ -9,7 +9,7 @@ import pygame
 from objects import Board
 
 # creating board and storing variables
-board = Board(12, 36)
+board = Board(10, 25)
 bombs = board.bombs()
 size = board.size()  # for now we just stick to 10
 
@@ -21,14 +21,26 @@ fontsize = 3*size
 font = pygame.font.Font('freesansbold.ttf', fontsize)
 
 # define colours
+green = (0, 135, 56)
+blue = (0, 0, 255)
+red = (128, 13, 0)
+turquoise = 12, 179, 151
 black = (0, 0, 0)
 white = (255, 255, 255)
-green = (0, 255, 0)
-red = (255, 0, 0)
-grey = (211, 211, 211)
+grey = (140, 140, 140)
+lightgrey = (207, 207, 207)
+
+# for printing numbers in different colours
+colourlist = [blue, green, red, red, turquoise, black, grey]
+
+# loading images
+flag = pygame.image.load('images/flag.png')
+flag = pygame.transform.scale(flag, (fontsize, fontsize))
+bomb = pygame.image.load('images/bomb.png')
+bomb = pygame.transform.scale(bomb, (fontsize, fontsize))
 
 # display properties
-margin = size
+margin = int(size/2)
 cell_len = 4*size
 
 width = size * (margin + cell_len) + margin
@@ -62,6 +74,13 @@ def make_text(text, x, y, color):
     screen.blit(text, textRect)
 
 
+def make_image(x, y, img):
+
+    img_rect = img.get_rect()
+    img_rect.center = (x, y)
+    screen.blit(img, img_rect)
+
+
 while board.play:
 
     # initial display
@@ -69,8 +88,7 @@ while board.play:
         screen.fill(black)
         for row in range(size):
             for col in range(size):
-                color = grey
-                pygame.draw.rect(screen, color, [(margin + cell_len) * col + margin,
+                pygame.draw.rect(screen, lightgrey, [(margin + cell_len) * col + margin,
                                                  (margin + cell_len) * row + margin,
                                                  cell_len, cell_len])
 
@@ -99,22 +117,22 @@ while board.play:
                 # make_text('Remaining: {}'.format(board.remaining), x/2, y - cell_len/2, white)
                 initialise = False
 
-            # defining variables for easier access
-            info_board = board.neighbours_board
-            cell_board = board.cell_board
-
-            # define cell for clicked cell
-            cell = cell_board[row][col]
+                # defining variables for easier access
+                info_board = board.neighbours_board
+                cell_board = board.cell_board
 
             # normal play starts here
             if not initialise:
 
-                # calling methods based on player choice
-                if left_click == 1 and not cell.flagged() and not cell.opened():
-                    board.open_cell(row, col)
+                # define cell for clicked cell
+                cell = cell_board[row][col]
 
-                elif middle_click == 1 and not cell.flagged() and cell.opened():
-                    board.open_neighbours(row, col)
+                # calling methods based on player choice
+                if left_click == 1 and not cell.flagged():
+                    if not cell.opened():
+                        board.open_cell(row, col)
+                    else:
+                        board.open_neighbours(row, col)
 
                 elif right_click == 1 and not cell.opened():
                     # print('flagging')
@@ -131,25 +149,26 @@ while board.play:
 
                         # define new cell here, since we are looking at every single cell
                         cell = board.cell_board[i][j]
-                        color = grey
+                        color = lightgrey
+                        y = (cell_len + margin) * (i - 1) + cell_len / 2 + margin
+                        x = (cell_len + margin) * (j - 1) + cell_len / 2 + margin
 
                         # draw value if opened
                         if cell.opened():
                             # print("Index {}, {} is opened".format(i, j))
                             number = cell.value()
-
-                            y = (cell_len + margin) * (i - 1) + cell_len/2 + margin
-                            x = (cell_len + margin) * (j - 1) + cell_len/2 + margin
-
-                            make_text(number, x, y, black)
+                            if number == -1:
+                                make_image(x, y, bomb)
+                            else:
+                                make_text(number, x, y, colourlist[number - 1])
 
                         # otherwise draw solid colour
                         else:
-                            if cell.flagged():
-                                color = green
                             pygame.draw.rect(screen, color, [(margin + cell_len) * (j - 1) + margin,
                                                              (margin + cell_len) * (i - 1) + margin,
                                                              cell_len, cell_len])
+                            if cell.flagged():
+                                make_image(x, y, flag)
 
                 # draw black strip over bottom text, then redraw remaining bombs text
                 pygame.draw.rect(screen, black, (0, length - cell_len, width, cell_len))

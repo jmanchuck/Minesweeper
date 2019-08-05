@@ -212,7 +212,6 @@ class Board:
         """
         adj_flags = 0
         for (surr_row, surr_col) in self.neighbour_coord(row, col):
-            print(surr_row, surr_col)
             if self.cell_board[surr_row][surr_col].flagged():
                 adj_flags += 1
         if adj_flags == self.cell_board[row][col].value():
