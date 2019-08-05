@@ -41,4 +41,4 @@ Left click to open a cell, right click to flag a cell and left click an already 
 - [x] update pygame interface to work with objects.py for 10x10
 - [x] update pygame interface to work with any nxn sized game (some bugs)
 - [ ] develop NN for minesweeper
-- [ ] ... 
+- [ ] hard code machine learning (probability density over all cells?)
