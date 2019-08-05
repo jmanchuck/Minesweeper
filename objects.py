@@ -188,7 +188,7 @@ class Board:
 
         cell = self.cell_board[row][col]
 
-        if not cell.opened() and not cell.flagged():
+        if not cell.opened() and not cell.flagged() and 0 < row < self._size + 1 and 0 < col < self._size + 1:
             cell.open()
 
             # print("opened cell {}, {}".format(row, col))
@@ -214,7 +214,10 @@ class Board:
         for (surr_row, surr_col) in self.neighbour_coord(row, col):
             if self.cell_board[surr_row][surr_col].flagged():
                 adj_flags += 1
+
+        print("number of adjacent flagged = ", adj_flags)
         if adj_flags == self.cell_board[row][col].value():
+
             # print('match found, opening neighbours for {}, {}'.format(row, col))
             for (surr_row, surr_col) in self.neighbour_coord(row, col):
                 self.open_cell(surr_row, surr_col)

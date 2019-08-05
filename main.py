@@ -54,6 +54,7 @@ pygame.display.set_caption("Minesweeper")
 clock = pygame.time.Clock()
 
 initialise = True
+win = False
 
 
 def make_text(text, x, y, color):
@@ -116,6 +117,7 @@ while board.play:
                 board.generate(row, col)  # created board object
                 # make_text('Remaining: {}'.format(board.remaining), x/2, y - cell_len/2, white)
                 initialise = False
+                board.print_neighbours_board()
 
                 # defining variables for easier access
                 info_board = board.neighbours_board
@@ -144,6 +146,7 @@ while board.play:
                         board.remaining -= 1
 
                 # blit text for each cell
+                all_opened = 0
                 for i in range(1, size + 1):
                     for j in range(1, size + 1):
 
@@ -161,6 +164,7 @@ while board.play:
                                 make_image(x, y, bomb)
                             else:
                                 make_text(number, x, y, colourlist[number - 1])
+                                all_opened += 1
 
                         # otherwise draw solid colour
                         else:
@@ -174,11 +178,19 @@ while board.play:
                 pygame.draw.rect(screen, black, (0, length - cell_len, width, cell_len))
                 make_text('Remaining: {}'.format(board.remaining), width/2, length - cell_len/2, white)
 
-    if not board.play:
-        pygame.draw.rect(screen, black, (0, length - cell_len, width, cell_len))
-        lose_text = '!!!!!!'
+    if board.remaining == 0 and all_opened == size**2 - bombs:
+        board.play = False
+        win = True
 
-        make_text(lose_text, width / 2, length - cell_len / 2, red)
+    if not board.play:
+
+        if win:
+            text = 'All mines found!'
+        else:
+            text = '!!!!!!'
+
+        pygame.draw.rect(screen, black, (0, length - cell_len, width, cell_len))
+        make_text(text, width / 2, length - cell_len / 2, red)
 
         pygame.display.flip()
 
