@@ -8,12 +8,11 @@ Basic pygame interface for minesweeper
 import pygame
 from objects import Board
 
-# creating board and storing variables
+# initialise board size and number of bombs
 board = Board(10, 25)
 bombs = board.bombs()
 size = board.size()  # for now we just stick to 10
 
-# generate pygame based on board
 pygame.init()
 
 # pygame text size
@@ -39,13 +38,12 @@ flag = pygame.transform.scale(flag, (fontsize, fontsize))
 bomb = pygame.image.load('images/bomb.png')
 bomb = pygame.transform.scale(bomb, (fontsize, fontsize))
 
-# display properties
+# window and display dimensions
 margin = int(size/2)
 cell_len = 4*size
 
 width = size * (margin + cell_len) + margin
 length = size * (margin + cell_len) + cell_len
-
 window_size = [width, length]
 
 # create display
@@ -58,15 +56,7 @@ win = False
 
 
 def make_text(text, x, y, color):
-
-    """
-    Args:
-        text (string/int): text to be displayed
-        x (int), y(int): position
-        color (var): one of the defined colors
-
-    Blits the text passed into this function
-    """
+    """ Blits text centred around position x, y """
 
     text = font.render(str(text), True, color)
     textRect = text.get_rect()
@@ -76,6 +66,7 @@ def make_text(text, x, y, color):
 
 
 def make_image(x, y, img):
+    """ Blits image centred around position x, y """
 
     img_rect = img.get_rect()
     img_rect.center = (x, y)
@@ -203,7 +194,7 @@ while board.play:
                     board.play = False
                     prompt = False
 
-                # if right click
+                # if right click, replay
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_press = pygame.mouse.get_pressed()
                     if mouse_press[2] == 1:
