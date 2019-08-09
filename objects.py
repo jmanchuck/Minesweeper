@@ -284,7 +284,7 @@ def get_input():
 if __name__ == "__main__":
     print('\nDefault game contains 25% of cells being bombs')
 
-    game_dimension = int(input("\nDimension of game? (dont troll): "))
+    game_dimension = int(input("\nDimension of game? (4 or above): "))
     if game_dimension < 4:
         print('try something harder pussy')
         exit()
