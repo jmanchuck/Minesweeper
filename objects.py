@@ -80,7 +80,7 @@ class Board:
             ind1 = np.random.randint(self._size)
             ind2 = np.random.randint(self._size)
 
-            if init_row <= ind1 <= init_row + 1 and init_col <= ind2 <= init_col + 1:
+            if init_row - 1 <= ind1 <= init_row + 1 and init_col - 1 <= ind2 <= init_col + 1:
                 continue
 
             elif not self.cell_board[ind1][ind2].bomb():
@@ -91,6 +91,8 @@ class Board:
             for j in range(self._size):
                 if self.cell_board[i][j].bomb():
                     self.on_neighbours(i, j, self.increment_val)
+
+        self.open_cell(init_row, init_col)
 
     def print_board(self):
         for i in range(self._size):
@@ -126,16 +128,6 @@ class Board:
                 if 0 <= i < self._size and 0 <= j < self._size:
                     func(i, j)
 
-    def generate(self, init_row, init_col):
-        """
-        Creates board attributes, opens initial board
-        Args:
-            init_row (int): initial row that is opened
-            init_col (int): initial column that is opened
-        """
-
-        self.open_cell(init_row, init_col)
-
     def open_cell(self, row, col):
         """
         Args:
@@ -156,6 +148,12 @@ class Board:
             # recursion
             if cell.value() == 0:
                 self.on_neighbours(row, col, self.open_cell)
+
+    def flag_cell(self, row, col):
+        if self.cell_board[row][col].flagged():
+            self.cell_board[row][col].unflag()
+        else:
+            self.cell_board[row][col].flag()
 
     def open_neighbours(self, row, col):
         """
@@ -187,7 +185,7 @@ class Board:
                     if cell.bomb():
                         rows.append('!')
                     else:
-                        rows.append(str(cell[i][j].value()))
+                        rows.append(str(cell.value()))
                 elif cell.flagged():
                     rows.append('X')
 
@@ -206,13 +204,25 @@ class Board:
 if __name__ == "__main__":
 
     game = Board()
-
     game.create_board(3, 3)
-
     game.print_board()
 
     game.display()
 
+    i = 0
+    tests = 20
 
+    while i < 100 and game.play:
 
-
+        if i % 2 == 0:
+            print("open something")
+            row = int(input("row: "))
+            col = int(input("col: "))
+            game.open_cell(row, col)
+        else:
+            print("flag something")
+            row = int(input("row: "))
+            col = int(input("col: "))
+            game.flag_cell(row, col)
+        i += 1
+        game.display()
