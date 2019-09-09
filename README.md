@@ -36,6 +36,9 @@ Left click to open a cell, right click to flag a cell and left click an already 
 05/08
 * moved auto open to left click, added icons for bombs and flags, updated colours
 
+09/09
+* update ```objects.py```, removed redundant methods, combined neighbour board and bomb board and cell board
+
 ## TODO
 
 - [x] update pygame interface to work with objects.py for 10x10
