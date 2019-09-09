@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="e920f992-4c62-42ef-ad0b-43bc5d0bbfe8" name="Default Changelist" comment="fixed flooding function for opening cells. added unflagging to cell objects. fixed display.">
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/objects.py" beforeDir="false" afterPath="$PROJECT_DIR$/objects.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -18,8 +19,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/objects.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="203">
-              <caret line="48" column="39" selection-start-line="48" selection-start-column="39" selection-end-line="48" selection-end-column="39" />
+            <state relative-caret-position="273">
+              <caret line="160" column="29" selection-start-line="160" selection-start-column="29" selection-end-line="160" selection-end-column="29" />
             </state>
           </provider>
         </entry>
@@ -27,8 +28,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="608">
-              <caret line="143" column="52" selection-start-line="143" selection-start-column="52" selection-end-line="143" selection-end-column="52" />
+            <state relative-caret-position="171">
+              <caret line="157" column="66" selection-start-line="157" selection-start-column="66" selection-end-line="157" selection-end-column="66" />
               <folding>
                 <element signature="e#99#112#0" expanded="true" />
               </folding>
@@ -50,6 +51,7 @@
       <find>open_neighbours</find>
       <find>exit</find>
       <find>print</find>
+      <find>all_op</find>
     </findStrings>
     <replaceStrings>
       <replace />
@@ -112,7 +114,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.objects">
+  <component name="RunManager" selected="Python.main">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="Minesweeper" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -199,8 +201,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.objects" />
         <item itemvalue="Python.main" />
+        <item itemvalue="Python.objects" />
         <item itemvalue="Python.pygametest" />
         <item itemvalue="Python.newobject" />
       </list>
@@ -272,8 +274,8 @@
     <entry file="file://$PROJECT_DIR$/pygametest.py" />
     <entry file="file://$PROJECT_DIR$/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="608">
-          <caret line="143" column="52" selection-start-line="143" selection-start-column="52" selection-end-line="143" selection-end-column="52" />
+        <state relative-caret-position="171">
+          <caret line="157" column="66" selection-start-line="157" selection-start-column="66" selection-end-line="157" selection-end-column="66" />
           <folding>
             <element signature="e#99#112#0" expanded="true" />
           </folding>
@@ -282,8 +284,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/objects.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="203">
-          <caret line="48" column="39" selection-start-line="48" selection-start-column="39" selection-end-line="48" selection-end-column="39" />
+        <state relative-caret-position="273">
+          <caret line="160" column="29" selection-start-line="160" selection-start-column="29" selection-end-line="160" selection-end-column="29" />
         </state>
       </provider>
     </entry>

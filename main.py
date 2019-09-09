@@ -98,27 +98,23 @@ while board.play:
             if pos[0] > (cell_len + margin) * size or pos[1] > (cell_len + margin) * size:
                 continue
 
-            col = 1 + int(pos[0] // (cell_len + margin))
-            row = 1 + int(pos[1] // (cell_len + margin))
+            col = int(pos[0] // (cell_len + margin))
+            row = int(pos[1] // (cell_len + margin))
 
             # print('Click {}. Grid coordinates {}, {}'.format(pos, row, col))
 
             # condition for opening
             if initialise and left_click == 1:
-                board.generate(row, col)  # created board object
+                board.create_board(row, col)  # created board object
                 # make_text('Remaining: {}'.format(board.remaining), x/2, y - cell_len/2, white)
                 initialise = False
-                board.print_neighbours_board()
-
-                # defining variables for easier access
-                info_board = board.neighbours_board
-                cell_board = board.cell_board
+                board.print_board()
 
             # normal play starts here
             if not initialise:
 
                 # define cell for clicked cell
-                cell = cell_board[row][col]
+                cell = board.cell_board[row][col]
 
                 # calling methods based on player choice
                 if left_click == 1 and not cell.flagged():
@@ -128,24 +124,17 @@ while board.play:
                         board.open_neighbours(row, col)
 
                 elif right_click == 1 and not cell.opened():
-                    # print('flagging')
-                    if cell.flagged():
-                        cell.unflag()
-                        board.remaining += 1
-                    else:
-                        cell.flag()
-                        board.remaining -= 1
+                    board.flag_cell(row, col)
 
                 # blit text for each cell
-                all_opened = 0
-                for i in range(1, size + 1):
-                    for j in range(1, size + 1):
+                for i in range(0, size):
+                    for j in range(0, size):
 
                         # define new cell here, since we are looking at every single cell
                         cell = board.cell_board[i][j]
                         color = lightgrey
-                        y = (cell_len + margin) * (i - 1) + cell_len / 2 + margin
-                        x = (cell_len + margin) * (j - 1) + cell_len / 2 + margin
+                        y = (cell_len + margin) * i + cell_len / 2 + margin
+                        x = (cell_len + margin) * j + cell_len / 2 + margin
 
                         # draw value if opened
                         if cell.opened():
@@ -155,21 +144,20 @@ while board.play:
                                 make_image(x, y, bomb)
                             else:
                                 make_text(number, x, y, colourlist[number - 1])
-                                all_opened += 1
 
                         # otherwise draw solid colour
                         else:
-                            pygame.draw.rect(screen, color, [(margin + cell_len) * (j - 1) + margin,
-                                                             (margin + cell_len) * (i - 1) + margin,
+                            pygame.draw.rect(screen, color, [(margin + cell_len) * j + margin,
+                                                             (margin + cell_len) * i + margin,
                                                              cell_len, cell_len])
                             if cell.flagged():
                                 make_image(x, y, flag)
 
                 # draw black strip over bottom text, then redraw remaining bombs text
                 pygame.draw.rect(screen, black, (0, length - cell_len, width, cell_len))
-                make_text('Remaining: {}'.format(board.remaining), width/2, length - cell_len/2, white)
+                make_text('Remaining: {}'.format(board.remaining()), width/2, length - cell_len/2, white)
 
-    if board.remaining == 0 and all_opened == size**2 - bombs:
+    if board.remaining == 0 and board.num_open() == size**2 - bombs:
         board.play = False
         win = True
 

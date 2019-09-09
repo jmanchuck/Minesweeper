@@ -62,7 +62,8 @@ class Board:
 
         self._size = size
         self._bombs = bombs
-        self.remaining = bombs
+        self._remaining = bombs
+        self._num_open = 0
         self.cell_board = [[Cell(0) for i in range(self._size)] for j in range(self._size)]
         self.play = True
 
@@ -121,7 +122,7 @@ class Board:
             col (int): col index
             func (function): any function that acts on specific coordinates
 
-        Applies func on all neighbours
+        Applies func on all neighbours of row and col
         """
         for i in range(row - 1, row + 2):
             for j in range(col - 1, col + 2):
@@ -139,21 +140,25 @@ class Board:
 
         cell = self.cell_board[row][col]
 
-        if not cell.opened() and not cell.flagged() and 0 <= row < self._size and 0 <= col < self._size:
-            cell.open()
+        if not cell.flagged() and 0 <= row < self._size and 0 <= col < self._size:
+            if not cell.opened():
+                cell.open()
+                self._num_open += 1
 
-            if cell.bomb():
-                self.play = False
+                if cell.bomb():
+                    self.play = False
 
-            # recursion
-            if cell.value() == 0:
-                self.on_neighbours(row, col, self.open_cell)
+                # recursion
+                if cell.value() == 0:
+                    self.on_neighbours(row, col, self.open_cell)
 
     def flag_cell(self, row, col):
         if self.cell_board[row][col].flagged():
             self.cell_board[row][col].unflag()
+            self._remaining += 1
         else:
             self.cell_board[row][col].flag()
+            self._remaining -= 1
 
     def open_neighbours(self, row, col):
         """
@@ -171,9 +176,11 @@ class Board:
                     if self.cell_board[i][j].flagged():
                         adj_flags += 1
 
-        if adj_flags == self.cell_board[row][col].value():
-
-            self.on_neighbours(row, col, self.open_cell)
+        if adj_flags == self.cell_board[row][col].value() and adj_flags > 0:
+            for i in range(row - 1, row + 2):
+                for j in range(col - 1, col + 2):
+                    if 0 <= i < self._size and 0 <= j < self._size:
+                        self.open_cell(i, j)
 
     def display(self):
         print("    " + " ".join([str(x) for x in range(self._size)]))
@@ -200,6 +207,12 @@ class Board:
     def bombs(self):
         return self._bombs
 
+    def remaining(self):
+        return self._remaining
+
+    def num_open(self):
+        return self._num_open
+
 
 if __name__ == "__main__":
 
@@ -212,12 +225,16 @@ if __name__ == "__main__":
     i = 0
     tests = 20
 
+    board = game.cell_board
+
     while i < 100 and game.play:
 
         if i % 2 == 0:
             print("open something")
             row = int(input("row: "))
             col = int(input("col: "))
+            if board[row][col].opened():
+                game.open_neighbours(row, col)
             game.open_cell(row, col)
         else:
             print("flag something")
