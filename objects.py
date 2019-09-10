@@ -54,10 +54,11 @@ class Board:
             bombs (int): number of bombs on the board (must be less than size^2)
 
         Attributes:
-            bomb_board (2D np arr): array of booleans, True signifies a bomb. (n+2) x (n+2)
-            neighbours_board (2D np arr): array storing the information of adjacent bombs. (n+2) x (n+2)
             cell_board (2D list): list of Cell objects from class
-            display (2D list): game display for playing in terminal
+            size (int): size of board n (n x n)
+            bombs (int): number of remaining bombs
+            remaining (int): keeps track of how many bombs remaining
+            num_open (int): keeps track of how many cells opened
         """
 
         self._size = size
@@ -201,6 +202,9 @@ class Board:
 
             print("{} | {}".format(i, " ".join(rows)))
 
+    def get_arr(self):
+        return self.cell_board
+
     def size(self):
         return self._size
 
@@ -226,6 +230,8 @@ if __name__ == "__main__":
     tests = 20
 
     board = game.cell_board
+
+    print(game.board_arr())
 
     while i < 100 and game.play:
 
