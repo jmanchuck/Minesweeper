@@ -38,6 +38,12 @@ class Cell:
     def value(self):
         return self._value
 
+    def set_value(self, val):
+        self._value = val
+
+    def set_bomb(self):
+        self._bomb = True
+
 
 class Board:
     def __init__(self, size=10, bombs=25):
@@ -48,134 +54,112 @@ class Board:
             bombs (int): number of bombs on the board (must be less than size^2)
 
         Attributes:
-            bomb_board (2D np arr): array of booleans, True signifies a bomb. (n+2) x (n+2)
-            neighbours_board (2D np arr): array storing the information of adjacent bombs. (n+2) x (n+2)
             cell_board (2D list): list of Cell objects from class
-            display (2D list): game display for playing in terminal
+            size (int): size of board n (n x n)
+            bombs (int): number of remaining bombs
+            remaining (int): keeps track of how many bombs remaining
+            num_open (int): keeps track of how many cells opened
         """
 
         self._size = size
         self._bombs = bombs
-        self.remaining = bombs
-        self.bomb_board = None
-        self.neighbours_board = None
-        self.cell_board = None
+        self._remaining = bombs
+        self._num_open = 0
+        self.cell_board = [[Cell(0) for i in range(self._size)] for j in range(self._size)]
         self.play = True
-        self.display = [['_' for x in range(self._size+2)] for x in range(self._size+2)]
 
-    def create_bomb_board(self, init_row, init_col):
+    def create_threes(self, init_row, init_col):
+        """
+
+        Args:
+            init_row: initial opened row
+            init_col: initial opened column
+
+        Use for testing solver on a 3x3 sized game
+
+        """
+        # randomly place bombs
+        num_bombs = 0
+
+        while num_bombs < self._bombs:
+            ind1 = np.random.randint(self._size)
+            ind2 = np.random.randint(self._size)
+
+            if init_row == ind1 and init_col == ind2:
+                continue
+
+            elif not self.cell_board[ind1][ind2].bomb():
+                self.cell_board[ind1][ind2].set_bomb()
+                num_bombs += 1
+
+        for i in range(self._size):
+            for j in range(self._size):
+                if self.cell_board[i][j].bomb():
+                    self.on_neighbours(i, j, self.increment_val)
+
+        self.open_cell(init_row, init_col)
+
+    def create_board(self, init_row, init_col):
         """
         Args:
             init_col (int): initial col selection
             init_row (int): initial row selection, ensures there is no bomb on first selection
-        Returns:
-             (n+2) x (n+2) 2D boolean array of bombs
         """
 
-        # create an extra perimeter with no bombs around the board for ease of checking neighbours
-        board_array = np.zeros((self._size + 2, self._size + 2), dtype=bool)
-
+        # randomly place bombs
         num_bombs = 0
 
         while num_bombs < self._bombs:
-            ind1 = np.random.randint(1, self._size + 1)
-            ind2 = np.random.randint(1, self._size + 1)
+            ind1 = np.random.randint(self._size)
+            ind2 = np.random.randint(self._size)
 
-            if ind1 in [init_row - 1, init_row, init_row + 1] and ind2 in [init_col - 1, init_col, init_col + 1]:
+            if init_row - 1 <= ind1 <= init_row + 1 and init_col - 1 <= ind2 <= init_col + 1:
                 continue
 
-            elif not board_array[ind1][ind2]:
-                board_array[ind1][ind2] = True
+            elif not self.cell_board[ind1][ind2].bomb():
+                self.cell_board[ind1][ind2].set_bomb()
                 num_bombs += 1
 
-        return board_array
+        for i in range(self._size):
+            for j in range(self._size):
+                if self.cell_board[i][j].bomb():
+                    self.on_neighbours(i, j, self.increment_val)
 
-    def print_bomb_board(self):
-        print(self.bomb_board)
-
-    def return_neighbour(self, row, col):
-        """
-        Args:
-            col (int): column index
-            row (int): row index
-        Returns:
-            number of bombs in immediate neighbour (max 8) for a specific position
-            None if position is bomb
-        """
-        if self.bomb_board[row][col]:  # bomb is -1
-            return -1
-
-        else:
-            neighbours = 0
-
-            for i in [row-1, row, row+1]:
-                for j in [col-1, col, col+1]:
-                    if self.bomb_board[i][j]:
-                        neighbours += 1
-            return neighbours
-
-    @staticmethod
-    def neighbour_coord(row, col):
-        """
-        Args:
-            row (int), col(int)
-        Returns:
-            List of all neighbours in the form of a tuple (i,j)
-        """
-        neighbour_list = []
-        for i in [row - 1, row, row + 1]:
-            for j in [col - 1, col, col + 1]:
-                neighbour_list.append((i, j))
-
-        neighbour_list.remove((row, col))
-
-        return neighbour_list
-
-    def create_neighbours_board(self):  # can print this board to see all information
-        """
-        Returns
-            2D array storing how many neighbours are bombs for each cell, bomb cells are -1
-        """
-        board = np.zeros((self._size + 2, self._size + 2)).astype(int)
-
-        for i in range(1, self._size+1):  # indexes from 1 to size
-            for j in range(1, self._size+1):
-                board[i][j] = self.return_neighbour(i, j)
-
-        return board
-
-    def print_neighbours_board(self):
-        print(self.neighbours_board)
-
-    def create_cell_board(self):
-        """
-        Returns:
-            2D list of Cell objects
-        """
-        bomb_board = self.bomb_board
-
-        neighbour_board = self.neighbours_board
-
-        cell_objects = [[None for x in range(self._size + 2)] for x in range(self._size + 2)]
-
-        for i in range(0, self._size + 2):
-            for j in range(0, self._size + 2):
-                cell_objects[i][j] = Cell(neighbour_board[i][j], bomb_board[i][j])
-
-        return cell_objects
-
-    def generate(self, init_row, init_col):
-        """
-        Creates board attributes, opens initial board
-        Args:
-            init_row (int): initial row that is opened
-            init_col (int): initial column that is opened
-        """
-
-        self.bomb_board = self.create_bomb_board(init_row, init_col)
-        self.neighbours_board = self.create_neighbours_board()
-        self.cell_board = self.create_cell_board()
         self.open_cell(init_row, init_col)
+
+    def print_board(self):
+        for i in range(self._size):
+            row = []
+            for j in range(self._size):
+                if self.cell_board[i][j].bomb():
+                    row.append("!")
+                else:
+                    row.append(str(self.cell_board[i][j].value()))
+            print(" ".join(row))
+
+    def increment_val(self, row, col):
+        """
+
+        Args:
+            row:
+            col:
+        Increments the value of the cell by 1
+        """
+        self.cell_board[row][col].set_value(self.cell_board[row][col].value() + 1)
+
+    def on_neighbours(self, row, col, func):
+        """
+        Args:
+            row (int): row index
+            col (int): col index
+            func (function): any function that acts on specific coordinates
+
+        Applies func on all neighbours of row and col
+        """
+        for i in range(row - 1, row + 2):
+            for j in range(col - 1, col + 2):
+                if 0 <= i < self._size and 0 <= j < self._size:
+                    func(i, j)
 
     def open_cell(self, row, col):
         """
@@ -188,18 +172,25 @@ class Board:
 
         cell = self.cell_board[row][col]
 
-        if not cell.opened() and not cell.flagged() and 0 < row < self._size + 1 and 0 < col < self._size + 1:
-            cell.open()
+        if not cell.flagged() and 0 <= row < self._size and 0 <= col < self._size:
+            if not cell.opened():
+                cell.open()
+                self._num_open += 1
 
-            # print("opened cell {}, {}".format(row, col))
+                if cell.bomb():
+                    self.play = False
 
-            if cell.bomb():
-                self.play = False
+                # recursion
+                if cell.value() == 0:
+                    self.on_neighbours(row, col, self.open_cell)
 
-            if cell.value() == 0:
-                for (surr_row, surr_col) in self.neighbour_coord(row, col):
-                    if 0 < surr_row <= self._size and 0 < surr_col <= self._size:
-                        self.open_cell(surr_row, surr_col)
+    def flag_cell(self, row, col):
+        if self.cell_board[row][col].flagged():
+            self.cell_board[row][col].unflag()
+            self._remaining += 1
+        else:
+            self.cell_board[row][col].flag()
+            self._remaining -= 1
 
     def open_neighbours(self, row, col):
         """
@@ -211,50 +202,39 @@ class Board:
         Note that if the flags are wrong, the player loses by opening a bomb
         """
         adj_flags = 0
-        for (surr_row, surr_col) in self.neighbour_coord(row, col):
-            if self.cell_board[surr_row][surr_col].flagged():
-                adj_flags += 1
+        for i in range(row - 1, row + 2):
+            for j in range(col - 1, col + 2):
+                if 0 <= i < self._size and 0 <= j < self._size:
+                    if self.cell_board[i][j].flagged():
+                        adj_flags += 1
 
-        print("number of adjacent flagged = ", adj_flags)
-        if adj_flags == self.cell_board[row][col].value():
+        if adj_flags == self.cell_board[row][col].value() and adj_flags > 0:
+            for i in range(row - 1, row + 2):
+                for j in range(col - 1, col + 2):
+                    if 0 <= i < self._size and 0 <= j < self._size:
+                        self.open_cell(i, j)
 
-            # print('match found, opening neighbours for {}, {}'.format(row, col))
-            for (surr_row, surr_col) in self.neighbour_coord(row, col):
-                self.open_cell(surr_row, surr_col)
-
-    def update_display(self):
-        for row in range(self._size+2):
-            for col in range(self._size+2):
-                cell = self.cell_board[row][col]
+    def display(self):
+        print("    " + " ".join([str(x) for x in range(self._size)]))
+        for i in range(self._size):
+            rows = []
+            for j in range(self._size):
+                cell = self.cell_board[i][j]
                 if cell.opened():
                     if cell.bomb():
-                        self.display[row][col] = '!'
+                        rows.append('!')
                     else:
-                        self.display[row][col] = str(self.neighbours_board[row][col])
+                        rows.append(str(cell.value()))
                 elif cell.flagged():
-                    self.display[row][col] = 'X'
+                    rows.append('X')
 
                 elif not cell.flagged():
-                    self.display[row][col] = '_'
+                    rows.append('_')
 
-    def print_display(self):
-        real_display = [[None for x in range(self._size)] for x in range(self._size)]
+            print("{} | {}".format(i, " ".join(rows)))
 
-        for i in range(self._size):
-            for j in range(self._size):
-                real_display[i][j] = self.display[i+1][j+1]
-
-        # extra display things
-        print("   ",  " ".join([str(i) for i in range(1, self._size+1)]))
-        print('__' * (self._size+2))
-        counter = 1
-
-        # this is relevant
-        for r in real_display:
-            print(counter, " ", " ".join(r))
-            counter += 1
-
-        print('__' * (self._size+2))
+    def get_arr(self):
+        return self.cell_board
 
     def size(self):
         return self._size
@@ -262,101 +242,41 @@ class Board:
     def bombs(self):
         return self._bombs
 
+    def remaining(self):
+        return self._remaining
 
-def get_input():
-    """
-    Returns:
-        Valid user input
-    """
-    bad_input = True
-    while bad_input:
-        choice = input('\nopen (o) or flag (f) followed by row and column, e.g. o 3 3: ').split(' ')
-        if len(choice) != 3:
-            continue
-        try:
-            choice = [choice[0], int(choice[1]), int(choice[2])]
-        except ValueError:
-            continue
-        if choice[1] in range(1, size + 1) and choice[2] in range(1, size + 1) and choice[0].lower() in ['o', 'f']:
-            return choice
+    def num_open(self):
+        return self._num_open
 
 
 if __name__ == "__main__":
-    print('\nDefault game contains 25% of cells being bombs')
 
-    game_dimension = int(input("\nDimension of game? (4 or above): "))
-    if game_dimension < 4:
-        print('try something harder pussy')
-        exit()
-    game_bombs = int(game_dimension**2/4)
+    game = Board()
+    game.create_board(3, 3)
+    game.print_board()
 
-    game = Board(game_dimension, game_bombs)  # change args for size and no. of bombs, i.e. Board(12, 36)
+    game.display()
 
-    bombs = game.bombs()
-    size = game.size()
-    remaining = bombs
+    i = 0
+    tests = 20
 
-    print('Top left is (1, 1) bottom right is ({}, {})\n'.format(size, size))
-    print('First index represents row, second index represents column.\n')
+    board = game.cell_board
 
-    # this is just extra display stuff, isn't necessary
-    print("   ", " ".join([str(i) for i in range(1, size + 1)]))
-    print('__' * (size + 2))
-    blank = [['_' for x in range(size)] for x in range(size)]
-    counterino = 1
-    for i in blank:
-        print(counterino, " ", " ".join(i))
-        counterino += 1
-    print('__' * (size + 2))
-    # display ends here
+    print(game.board_arr())
 
-    game.generate(int(input('\nOpen row: ')), int(input('Open col: ')))
-    # game.print_neighbours_board() # print this for answers
-    game.update_display()
-    game.print_display()
+    while i < 100 and game.play:
 
-    while game.play:
-
-        # get inputs from user
-        choice = get_input()
-        row, col = choice[1], choice[2]
-
-        cell = game.cell_board[row][col]
-
-        # user commands applied to object
-        if choice[0].lower() == 'o':
-            if cell.opened():
+        if i % 2 == 0:
+            print("open something")
+            row = int(input("row: "))
+            col = int(input("col: "))
+            if board[row][col].opened():
                 game.open_neighbours(row, col)
             game.open_cell(row, col)
-
-        elif choice[0].lower() == 'f':
-            if cell.opened():
-                print('Invalid, cell is opened')
-            elif cell.flagged():
-                cell.unflag()
-                remaining += 1
-            else:
-                cell.flag()
-                remaining -= 1
-
-        # update and printing
-        game.update_display()
-        game.print_display()
-        print('remaining bombs: {}'.format(remaining))
-
-        # win condition, otherwise it's a lose
-        if remaining == 0:
-            correct = 0
-            for i in range(size+2):
-                for j in range(size+2):
-                    if game.bomb_board[i][j] and game.cell_board[i][j].flagged():
-                        correct += 1
-
-            if correct == bombs:
-                game.play = False
-                print("All mines found. You win!")
-
-                exit()
-
-        if not game.play:
-            print("You lose you bad")
+        else:
+            print("flag something")
+            row = int(input("row: "))
+            col = int(input("col: "))
+            game.flag_cell(row, col)
+        i += 1
+        game.display()
