@@ -38,8 +38,3 @@ Left click to open a cell, right click to flag a cell and left click an already 
 
 09/09
 * update ```objects.py```, removed redundant methods, combined neighbour board and bomb board and cell board
-
-## TODO
-
-- [x] update pygame interface to work with objects.py for 10x10
-- [x] update pygame interface to work with any nxn sized game (some bugs)
