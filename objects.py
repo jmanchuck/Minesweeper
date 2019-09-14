@@ -128,6 +128,9 @@ class Board:
         self.open_cell(init_row, init_col)
 
     def print_board(self):
+        """
+        Prints the answers
+        """
         for i in range(self._size):
             row = []
             for j in range(self._size):
@@ -139,11 +142,10 @@ class Board:
 
     def increment_val(self, row, col):
         """
-
         Args:
             row:
             col:
-        Increments the value of the cell by 1
+        Increments the value of a cell at row, col by 1
         """
         self.cell_board[row][col].set_value(self.cell_board[row][col].value() + 1)
 
@@ -185,6 +187,13 @@ class Board:
                     self.on_neighbours(row, col, self.open_cell)
 
     def flag_cell(self, row, col):
+        """
+        Args:
+            row:
+            col:
+
+        Flags or unflags cell depending on state
+        """
         if self.cell_board[row][col].flagged():
             self.cell_board[row][col].unflag()
             self._remaining += 1
@@ -215,6 +224,9 @@ class Board:
                         self.open_cell(i, j)
 
     def display(self):
+        """
+        Displays a playable array in terminal
+        """
         print("    " + " ".join([str(x) for x in range(self._size)]))
         for i in range(self._size):
             rows = []
@@ -262,8 +274,7 @@ if __name__ == "__main__":
 
     board = game.cell_board
 
-    print(game.board_arr())
-
+    # 100 loops for testing
     while i < 100 and game.play:
 
         if i % 2 == 0:
