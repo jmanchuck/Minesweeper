@@ -68,37 +68,6 @@ class Board:
         self.cell_board = [[Cell(0) for i in range(self._size)] for j in range(self._size)]
         self.play = True
 
-    def create_threes(self, init_row, init_col):
-        """
-
-        Args:
-            init_row: initial opened row
-            init_col: initial opened column
-
-        Use for testing solver on a 3x3 sized game
-
-        """
-        # randomly place bombs
-        num_bombs = 0
-
-        while num_bombs < self._bombs:
-            ind1 = np.random.randint(self._size)
-            ind2 = np.random.randint(self._size)
-
-            if init_row == ind1 and init_col == ind2:
-                continue
-
-            elif not self.cell_board[ind1][ind2].bomb():
-                self.cell_board[ind1][ind2].set_bomb()
-                num_bombs += 1
-
-        for i in range(self._size):
-            for j in range(self._size):
-                if self.cell_board[i][j].bomb():
-                    self.on_neighbours(i, j, self.increment_val)
-
-        self.open_cell(init_row, init_col)
-
     def create_board(self, init_row, init_col):
         """
         Args:

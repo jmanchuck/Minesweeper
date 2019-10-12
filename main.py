@@ -140,7 +140,7 @@ while board.play:
                         if cell.opened():
                             # print("Index {}, {} is opened".format(i, j))
                             number = cell.value()
-                            if number == -1:
+                            if cell.bomb():
                                 make_image(x, y, bomb)
                             else:
                                 make_text(number, x, y, colourlist[number - 1])
